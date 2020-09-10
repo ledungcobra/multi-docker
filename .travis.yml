@@ -1,0 +1,17 @@
+sudo: required
+services: 
+    - docker
+before_install:
+    - docker build -t ledungcobra/react-test -f ./client/Dockerfile.dev .
+script:
+    - docker run ledungcobra/react-test npm run test -- --coverage
+after_success:
+    - docker build -t ledungcobra/multi-client ./client
+    - docker build -t ledungcobra/multi-nginx ./nginx
+    - docker build -t ledungcobra/multi-server ./server
+    - docker build -t ledungcobra/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push ledungcobra/multi-client
+    - docker push ledungcobra/multi-nginx
+    - docker push ledungcobra/multi-server
+    - docker push ledungcobra/multi-worker
